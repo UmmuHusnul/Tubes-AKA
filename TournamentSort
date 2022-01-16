@@ -1,0 +1,128 @@
+#include<iostream>
+#include<algorithm>
+#define DATA_MAX (int)((unsigned)(~(int)0)>>1)
+using namespace std;
+
+/************Tree selection sorting or tournament sorting *****************/
+struct TreeNode{
+	int data;
+	int arr_index;//Record which element of the original array the current node is
+
+};
+
+TreeNode *tree;
+
+void UpdataTree(TreeNode tree[],int index)//Start updating from the last winning node
+{
+	while(index)
+	{
+		if(index% 2)//If it is the left child
+		{
+			if(tree[index].data <= tree[index+1].data)//The left child is smaller than the right child
+			{
+				tree[(index-1)/2].data = tree[index].data;//Update the value of the parent node
+				tree[(index-1)/2].arr_index = tree[index].arr_index;//Update the arr_index of the parent node
+			}
+			else
+			{
+				tree[(index-1)/2].data = tree[index+1].data;//Update the parent node
+				tree[(index-1)/2].arr_index = tree[index+1].arr_index;//Update the arr_index of the parent node
+			}
+
+			index = index/2;//Update the index, prepare to compare the parent node and its siblings
+		}
+
+		else//If it is the right child
+		{
+			if(tree[index-1].data <= tree[index].data)//The left child is smaller than the right child
+			{
+					  tree[index/2-1].data = tree[index-1].data;//Update the value of the parent node
+					  tree[index/2-1].arr_index = tree[index-1].arr_index;//Update the arr_index of the parent node
+			}
+			else//The left child is greater than the right child
+			{
+				tree[index/2-1].data = tree[index].data;//Update the value of the parent node
+				tree[index/2-1].arr_index = tree[index].arr_index;//Update the arr_index of the parent node
+			}
+			index = index/2-1;//Update the index, prepare to compare the parent node and its siblings
+		}
+	}//Get a winner at the end of while
+}
+
+void ChampionSort(int arr[],int num)//Championship sort
+{
+	int LeafNodeSize = 1;//The number of leaf nodes of a full binary tree
+	int height = 1;//The height of the full binary tree
+	while(LeafNodeSize <num)//After the loop, the full binary tree leaf nodes should be a power of 2
+	{
+		LeafNodeSize*=2;
+			++height;
+	}
+	int const TreeSize = LeafNodeSize *2 -1;//The number of nodes in a full binary tree is exactly twice the number of leaves
+	tree = new TreeNode[TreeSize];//Dynamic allocation comparison tree
+
+	int IndexLeafStart = LeafNodeSize -1;//The start index of the leaf node
+
+	for(int i = IndexLeafStart,j=0;i<TreeSize;i++)//. Initialize the tree
+	{
+		if(j <num)
+		{
+			tree[i].data = arr[j];
+			tree[i].arr_index = j;
+			j++;
+		}
+		else
+		{
+			tree[i].data = DATA_MAX;
+			tree[i].arr_index = -1;
+		}
+
+	}
+
+	for(int k = TreeSize-1;k>1;k-=2)//Find the label of the parent node
+	{
+		  if(tree[k-1].data <= tree[k].data)
+		  {
+			  tree[k/2-1].data = tree[k-1].data;//Update the value of the parent node
+			  tree[k/2-1].arr_index = tree[k-1].arr_index;//Update the arr_index of the parent node
+		  }
+		  else
+		  {
+			  tree[k/2-1].data = tree[k].data;//Update the value of the parent node
+			  tree[k/2-1].arr_index = tree[k].arr_index;//Update the arr_index of the parent node
+		  }
+	}//The first winner tree is obtained after the for
+
+	for(int m = 0;m<num-1;m++)//process the remaining num-1 elements
+	{
+		arr[m]=tree[0].data;//Store the winning tree in the array every time
+		int winIndex = tree[0].arr_index + IndexLeafStart;//Save the root information of the winner directly
+		tree[winIndex].data = DATA_MAX;//Set the value of the winner to infinity and then another round of comparison
+		UpdataTree(tree, winIndex);
+		cout << arr[m] <<" ";
+	}
+	arr[num-1] = tree[0].data;
+	cout << arr[num-1] <<" ";
+	delete [] tree;
+}
+
+
+int main()
+{
+	int length = 100;
+	int i = 0;
+
+	int a[100] = {183,86,377,115,193,335,186,92,249,221,362,27,290,59,163,326,140,226,372,136,11,168,167,29,182,330,62,323,67,335,329,202,22,258,269,167,193,56,211,42,229,173,21,119,184,137,398,324,315,370,13,326,91,180,356,273,62,370,196,81,305,125,284,327,336,105,46,129,113,257,124,295,382,145,14,167,234,364,43,150,287,8,76,378,188,384,203,251,354,399,332,260,76,168,139,12,226,186,94,339};
+
+	cout << "Sebelum di Sort:" << endl;
+	for(;i<100;i++)
+		cout<<a[i]<<", ";
+
+    cout<<endl;
+	cout << "Sort of tournaments:" << endl;
+	ChampionSort(a,length);
+	cout << endl;
+
+	return 0;
+
+}
